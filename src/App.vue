@@ -1,0 +1,390 @@
+<template>
+  <div id="app">
+    <div id="nav">
+      <router-link to="/">Home</router-link>
+      <router-link to="/editor">Editor</router-link>
+    </div>
+    <router-view />
+  </div>
+</template>
+
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
+#nav {
+  padding: 30px;
+}
+
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+#nav a.router-link-exact-active {
+  color: #42b983;
+}
+
+.passage-item {
+  position: absolute;
+  height: 7em;
+  width: 7em;
+  cursor: pointer;
+  background-color: #333333;
+  color: lightgrey;
+  border-radius: 1px;
+  padding: 2px;
+  z-index: 1;
+  border: 1px solid #333333;
+}
+
+.passage-item .passage-content {
+  overflow: hidden;
+  height: inherit;
+  width: inherit;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.passage-item .passage-identifier {
+  position: absolute;
+  top: -1em;
+  right: -1em;
+  height: 2em;
+  width: 2em;
+  border-radius: 1em;
+  color: black;
+  background-color: white;
+  z-index: 1;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 2em;
+}
+
+.passage-identifier.outgoing:hover {
+  box-shadow: 0 0 5px #4286f4;
+  background-color: #4286f4;
+}
+.passage-item .passage-identifier.outgoing {
+  right: calc(50% - 0.5em);
+  height: 1em;
+  width: 1em;
+  border-radius: 0.5em;
+}
+
+.passage-identifier.incoming:hover {
+  box-shadow: 0 0 5px #d8393a;
+  background-color: #d8393a;
+}
+
+.passage-item h2 {
+  font-size: 1.2em;
+  color: white;
+  margin: 0;
+}
+
+.passage-item p {
+  color: inherit;
+  margin-top: 0.15em;
+}
+
+.passage-item .passage-value {
+  position: absolute;
+  bottom: -1em;
+  right: -1em;
+  height: 2em;
+  width: 2em;
+  border-radius: 1em;
+  color: black;
+  background-color: white;
+  z-index: 1;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 2em;
+}
+
+.passage-area {
+  height: calc(100% - var(--toolbar-height));
+  position: relative;
+  width: 80%;
+}
+
+#container {
+  margin-bottom: 2em;
+  width: 99%;
+  height: 600px;
+}
+
+input,
+textarea {
+  border: none;
+  border-radius: 1px;
+  padding: 2px;
+}
+
+#main {
+  --toolbar-height: 6em;
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #0e131e;
+  overflow: hidden;
+}
+
+.information-sidebar {
+  color: aqua;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 20%;
+  height: calc(100% - 4em);
+  background-color: #232323;
+  box-shadow: 5px 1px 8px #181818 inset;
+  min-width: 130px;
+  z-index: 2;
+}
+
+.information-sidebar .info {
+  padding: 1em;
+}
+
+.toolbar {
+  z-index: 3;
+  position: absolute;
+  bottom: 0;
+  height: var(--toolbar-height);
+  width: 100%;
+  background-color: #232323;
+}
+
+.information-sidebar input,
+.information-sidebar textarea {
+  width: 100%;
+  resize: vertical;
+  max-height: 300px;
+  color: lightgrey;
+  background-color: rgb(9, 9, 12);
+}
+
+#add-passage-btn {
+  background-color: #00ee00;
+  color: white;
+}
+
+.toolbar button {
+  border: none;
+  height: 2em;
+  width: 2em;
+  font-size: 3em;
+  outline: none;
+  line-height: 1.5em;
+  padding: 0;
+  float: left;
+  color: white;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+#zoom-btn {
+  background-color: #74b6ce;
+}
+
+#zoom-btn:hover {
+  background-color: #8bd9f5;
+}
+
+#add-passage-btn:hover {
+  background-color: lightgreen;
+}
+
+#passage-editor-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  max-height: 80%;
+  width: 50%;
+  z-index: 3;
+}
+
+#passage-editor-container::before {
+  content: "";
+  position: absolute;
+  top: -12.5%;
+  left: -50%;
+  width: 200%;
+  height: 109%;
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+#passage-editor {
+  position: relative;
+  color: white;
+  height: auto;
+  padding: 2em;
+  background-color: rgb(29, 31, 33);
+}
+
+input#weight-input {
+  width: 3em;
+}
+
+#passage-editor input,
+#passage-editor select,
+#passage-editor textarea {
+  border: none;
+  padding: 2px;
+  font-size: inherit;
+  color: lightgrey;
+  background-color: rgb(9, 9, 12);
+}
+
+#passage-editor input,
+#passage-editor textarea {
+  width: 100%;
+}
+
+#passage-editor textarea {
+  height: 10em;
+}
+
+#passage-editor h3 {
+  margin-top: 0;
+  color: inherit;
+}
+
+.close-editor {
+  font-size: 2em;
+  background-color: #1d1f21;
+  border: 0;
+  color: inherit;
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 2em;
+  width: 2em;
+  line-height: 2em;
+  vertical-align: middle;
+}
+
+.close-editor:hover {
+  background-color: #3e4244;
+  outline: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#line {
+  height: 150px;
+  width: 0;
+  border: 1px solid black;
+}
+
+html {
+  font-family: "Helvetica", sans-serif;
+}
+
+.current-parents,
+.current-children {
+  display: inline-block;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.remove-link {
+  border-radius: 1px;
+  display: inline-block;
+  background-color: darkgrey;
+  padding: 3px 3px 3px 10px;
+  height: 2em;
+  margin-right: 0.2em;
+  margin-top: 0.2em;
+  vertical-align: middle;
+  line-height: 2em;
+}
+
+.remove-link:hover {
+  cursor: pointer;
+}
+
+.remove-link:hover i {
+  color: red;
+}
+
+#child-editor {
+  display: inline-block;
+  margin-top: 2em;
+}
+
+#child-editor label {
+  vertical-align: middle;
+}
+
+.current-children {
+  display: block;
+}
+.current-children li * {
+  vertical-align: top;
+}
+
+.passage-options {
+  position: absolute;
+  left: -2em;
+  top: 50%;
+  text-align: center;
+  height: auto;
+  width: 2em;
+  font-size: 2em;
+  color: lightgrey;
+  background-color: #333333;
+  vertical-align: middle;
+  display: inline-block;
+  border-radius: 0.1em;
+  padding-bottom: 0.5em;
+  transform: translateY(-50%);
+}
+
+.passage-options > div {
+  padding-top: 0.5em;
+  font-size: inherit;
+}
+
+.passage-options > div:hover {
+  color: aqua;
+}
+
+.dragged {
+  border: 1px solid #4286f4;
+}
+
+.rpgwidget ul li:hover a {
+  cursor: pointer;
+  color: #00b9eb;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}
+.story-area {
+  border: 2px solid black;
+  padding: 1em;
+  margin-bottom: 1em;
+}
+.options {
+  list-style-type: none;
+}
+</style>
