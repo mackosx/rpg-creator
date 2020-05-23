@@ -6,7 +6,6 @@
     @mouseup="moving = false"
     @mouseleave="moving = edit = false"
     @mouseenter="edit = true"
-    :data-i="index"
     :style="style"
     v-draggable
   >
