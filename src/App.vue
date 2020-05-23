@@ -32,8 +32,6 @@
 
 .passage-item {
   position: absolute;
-  height: 7em;
-  width: 7em;
   cursor: pointer;
   background-color: #333333;
   color: lightgrey;
@@ -210,28 +208,23 @@ button:hover {
   right: 0;
   top: 0;
   bottom: 0;
-  margin: auto;
-  max-height: 80%;
-  width: 50%;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
   z-index: 3;
 }
 
-#passage-editor-container::before {
-  content: "";
-  position: absolute;
-  top: -12.5%;
-  left: -50%;
-  width: 200%;
-  height: 109%;
-  background-color: rgba(0, 0, 0, 0.8);
-}
-
 #passage-editor {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
   color: white;
-  height: auto;
   padding: 2em;
   background-color: rgb(29, 31, 33);
+  width: 500px;
+  margin: auto;
+  top: 5%;
+  height: 80%;
 }
 
 input#weight-input {
@@ -386,5 +379,11 @@ html {
 }
 .options {
   list-style-type: none;
+}
+
+#svg-grid {
+  left: 0;
+  top: 0;
+  position: absolute;
 }
 </style>

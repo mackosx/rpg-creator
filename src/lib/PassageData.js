@@ -1,4 +1,4 @@
-export class Passage {
+export class PassageData {
   constructor(name, desc, top, left, weight, id) {
     this.name = name;
     this.desc = desc;

@@ -1,14 +1,14 @@
 <template>
   <div
     id="passage-editor-container"
-    v-if="current < passages.size() && ~current"
+    v-if="current < passages.size() && current !== -1"
     v-show="display"
   >
     <transition name="showEditor">
       <div id="passage-editor">
         <h3>Edit Passage</h3>
         <button class="close-editor" @click="hide">
-          <i class="fa fa-times"></i>
+          <font-awesome-icon :icon="['fas', 'times']" />
         </button>
         <label for="title-input">Title</label>
         <br />
@@ -37,7 +37,7 @@
               <ul class="current-parents" v-if="child.id == id" :key="cIndex">
                 <li class="remove-link">
                   {{ passages.vertices[pIndex].data.name }}
-                  <i class="fa fa-times"></i>
+                  <font-awesome-icon :icon="['fas', 'times']" />
                 </li>
               </ul>
             </template>
@@ -46,7 +46,7 @@
 
         <div id="child-editor">
           <label for="child-select">Choices</label>
-          <select id="child-select" @change="selectChild">
+          <select id="child-select" @change="connectChild">
             <option value selected>Select A Child</option>
             <template v-for="passage in passages.vertices">
               <option
@@ -69,7 +69,7 @@
                     ? passages.vertices[passages.getIndexOf(child.id)].data.name
                     : ""
                 }}
-                <i class="fa fa-times"></i>
+                <font-awesome-icon :icon="['fas', 'times']" />
               </li>
             </template>
           </ul>
@@ -80,13 +80,14 @@
 </template>
 
 <script>
-import { Digraph } from "../lib/AdjacencyList";
+import { Digraph, Node } from "../lib/AdjacencyList";
 export default {
   props: {
     display: Boolean,
     hide: Function,
     current: Number,
-    passages: Digraph
+    passages: Digraph,
+    passage: Node
   },
   computed: {
     edges: {
@@ -125,23 +126,14 @@ export default {
     }
   },
   methods: {
-    selectChild(e) {
-      // add selected edges
+    connectChild(e) {
       if (e.target.value !== "") {
-        let id = parseInt(e.target.value);
-        let index = this.passages.getIndexOf(id);
-        let childEl = this.passages.vertices[index].data.element;
-        let parentEl = this.passages.vertices[this.current].data.element; // not defined
-        // add the element as an edge
-        this.passages.vertices[this.current].addChild(parentEl, childEl, id);
-        // jQuery("#child-select").val("");
+        const childId = parseInt(e.target.value);
+        this.$emit("connect-child", childId, this.passage);
       }
     },
     removeChild(childId) {
-      this.passages.vertices[this.current].removeChild(childId);
-    },
-    defined() {
-      return this.passages.vertices[this.current] !== undefined;
+      this.$emit("remove-child", childId);
     }
   }
 };

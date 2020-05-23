@@ -6,15 +6,22 @@
     @mouseup="moving = false"
     @mouseleave="moving = edit = false"
     @mouseenter="edit = true"
-    :data-i="passages.getIndexOf(index)"
-    :style="{ top: passage.top, left: passage.left }"
+    :data-i="index"
+    :style="style"
     v-draggable
   >
-    <div class="passage-identifier" v-show="passage.isStart === true">
-      <i class="fa fa-rocket" aria-label="The starting passage"></i>
+    <div class="passage-identifier" v-if="passage.isStart === true">
+      <font-awesome-icon
+        :icon="['fas', 'rocket']"
+        title="starting passage"
+        aria-label="starting passage"
+      />
     </div>
     <div class="passage-identifier" v-if="passage.isEnd === true">
-      <i class="fa fa-stop-circle-o" aria-label="The ending passage"></i>
+      <font-awesome-icon
+        :icon="['fas', 'stop-circle']"
+        aria-label="The ending passage"
+      />
     </div>
     <div class="passage-content">
       <h2>{{ passage.name }}</h2>
@@ -61,47 +68,45 @@
 
 <script>
 // import { jsPlumb } from "jsplumb";
-import { DraggableDirective } from "../lib/DraggableDirective";
-import { Digraph } from "../lib/AdjacencyList";
+import { Draggable } from "../lib/DraggableDirective";
+import { PassageData } from "../lib/PassageData";
+import { jsPlumb } from "jsplumb";
 
 export default {
   props: {
-    passage: Object,
+    passage: PassageData,
     show: Function,
     index: Number,
     zoom: Boolean,
-    passages: Digraph
+    width: Number,
+    height: Number
   },
   directives: {
-    draggable: DraggableDirective
+    draggable: Draggable
+  },
+  computed: {
+    style() {
+      return {
+        top: this.passage.top,
+        left: this.passage.left,
+        width: `${this.width}px`,
+        height: `${this.height}px`
+      };
+    }
   },
   methods: {
-    // Removes start designation from all other passages, then set this passage as start
-    setStart: function() {
-      for (let i = 0; i < this.passages.vertices.length; i++) {
-        this.passages.vertices[i].data.isStart = false;
-      }
-      console.log(this.passage, this);
-      this.passage.isEnd = false;
-      this.passage.isStart = true;
+    setStart() {
+      this.$emit("set-start", this.passage);
     },
-    setEnd: function() {
-      for (let i = 0; i < this.passages.vertices.length; i++) {
-        this.passages.vertices[i].data.isEnd = false;
-      }
-      this.passage.isStart = false;
-      this.passage.isEnd = true;
+    setEnd() {
+      this.$emit("set-end", this.passage);
     },
-    // Deletes this passage from the list of vertices
-    remove: function() {
-      //e.stopPropagation();
-      this.passages.removeVertex(this.passage.id);
-      if (this.passages.size()) this.current = 0;
-      else this.current = -1;
+    remove() {
+      this.$emit("remove", this.passage);
     },
-    mouseDown: function() {
+    mouseDown(e) {
       this.moving = true;
-      // jQuery(e.target).trigger("click");
+      e.target.dispatchEvent(new Event("click", { bubbles: true }));
     }
   },
   data: function() {
@@ -112,9 +117,9 @@ export default {
   },
   mounted() {
     // when rendered
-    // jsPlumb.draggable(jQuery(this.$el), {
-    //   containment: true
-    // });
+    jsPlumb.draggable(this.$el, {
+      containment: true
+    });
     this.passage.element = this.$el.id;
     // jsPlumb.ready(() => {
     // 	let incoming = this.$el;

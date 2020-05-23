@@ -8,7 +8,6 @@
           width="100%"
           height="100%"
           xmlns="http://www.w3.org/2000/svg"
-          style="position: absolute;"
         >
           <defs>
             <pattern
@@ -69,12 +68,31 @@
             ></textarea>
           </div>
         </div>
-        <Passages :zoom="zoomLevel" :show="showEditor" :passages="passages" />
+        <div class="passage-area">
+          <template v-for="passage in passages.vertices">
+            <Passage
+              :passages="passages"
+              :passage="passage.data"
+              :zoom="zoomLevel"
+              :show="showEditor"
+              :index="passages.getIndexOf(passage.data.id)"
+              :key="passage.data.id"
+              @set-start="setStart"
+              @set-end="setEnd"
+              @remove="remove"
+              :width="passageWidth"
+              :height="passageHeight"
+            />
+          </template>
+        </div>
         <PassageEditor
           :hide="hideEditor"
           :display="isEditing"
-          :current="currentPassageEdit"
+          :current="currentPassageEditIndex"
           :passages="passages"
+          :passage="currentPassageEdit"
+          @connect-child="connectChild"
+          @remove-child="removeChild"
         ></PassageEditor>
         <template @heresData="listen"></template>
       </div>
@@ -84,10 +102,11 @@
 
 <script>
 import { Digraph } from "../lib/AdjacencyList";
-import { Passage } from "../lib/Passage";
+import { PassageData } from "../lib/PassageData";
 import { jsPlumb } from "jsplumb";
-import Passages from "../components/Passages";
-import PassageEditor from "../components/PassageEditor";
+import PassageEditor from "@/components/PassageEditor";
+import Passage from "@/components/Passage";
+
 // imports story from localized data
 // function checkStory(previousStory) {
 //   if (!previousStory || previousStory === "") {
@@ -118,23 +137,63 @@ export default {
       title: story.title,
       desc: story.desc,
       isEditing: false,
-      currentPassageEdit: 0
+      currentPassageEditIndex: 0,
+      passageWidth: 150,
+      passageHeight: 150
     };
   },
-  components: { Passages, PassageEditor },
+  components: { PassageEditor, Passage },
   computed: {
     zoomClass: function() {
       return this.zoomLevel ? "search-plus" : "search-minus";
+    },
+    currentPassageEdit() {
+      return this.passages.vertices[this.currentPassageEditIndex];
     }
   },
   methods: {
+    removeChild(childId) {
+      this.currentPassageEdit.removeChild(childId);
+    },
+    connectChild(childId, parentNode) {
+      // add selected edges
+      const index = this.passages.getIndexOf(childId);
+      const childEl = this.passages.vertices[index].data.element;
+      const parentEl = parentNode.data.element; // not defined
+      console.log(parentNode);
+      // add the element as an edge
+      parentNode.addChild(parentEl, childEl, childId);
+      document.querySelector("#child-select").value = "";
+    },
+    setEnd(passage) {
+      for (let i = 0; i < this.passages.vertices.length; i++) {
+        this.passages.vertices[i].data.isEnd = false;
+      }
+      passage.isStart = false;
+      passage.isEnd = true;
+    },
+    // Deletes this passage from the list of vertices
+    remove(passage) {
+      //e.stopPropagation();
+      this.passages.removeVertex(passage.id);
+      if (this.passages.size()) this.current = 0;
+      else this.current = -1;
+    },
+    setStart(passage) {
+      this.passages.vertices.forEach((v) => {
+        v.data.isStart = false;
+      });
+
+      passage.isEnd = false;
+      passage.isStart = true;
+    },
     addPassage() {
       // Set the id of the new passage to one more than the biggest id
       const len = this.passages.vertices.length;
       let id = 0;
       if (this.passages.vertices[len - 1] !== undefined)
         id = this.passages.vertices[len - 1].data.id + 1;
-      let newPassage = new Passage(
+      let newPassage = new PassageData(
         "Untitled " + (id + 1),
         "",
         "80px",
@@ -146,34 +205,29 @@ export default {
       //this.showEditor(newPassage.id);
     },
     showEditor(id) {
-      this.currentPassageEdit = this.passages.getIndexOf(id);
+      this.currentPassageEditIndex = this.passages.getIndexOf(id);
       this.isEditing = true;
     },
     hideEditor() {
-      //this.currentPassageEdit = -1;
+      //this.currentPassageEditIndex = -1;
       this.isEditing = false;
     },
     zoom() {
       this.zoomLevel = !this.zoomLevel;
-      let psg = document.querySelector(".passage-item");
-      let currWidth = psg.width();
-      let currHeight = psg.height();
       if (this.zoomLevel) {
-        psg.css("width", currWidth / 2);
-        psg.css("height", currHeight / 2);
+        this.passageWidth = this.passageWidth / 2;
+        this.passageHeight = this.passageHeight / 2;
         this.drawArrows();
       } else {
-        psg.css("width", currWidth * 2);
-        psg.css("height", currHeight * 2);
+        this.passageWidth = this.passageWidth * 2;
+        this.passageHeight = this.passageHeight * 2;
       }
     },
     connect(from, to) {
-      let conn;
-      conn = jsPlumb.connect({
+      return jsPlumb.connect({
         source: from,
         target: to
       });
-      return conn;
     },
     drawArrows() {
       // resets endpoints and draws arrows from scratch based on edge array
