@@ -1,6 +1,6 @@
 import { jsPlumb } from "jsplumb";
 
-class Node {
+export class Node {
   constructor(data) {
     this.data = data;
     this.edges = [];
@@ -119,14 +119,17 @@ export class Digraph {
   }
 
   removeVertex(id) {
+    console.log("removing");
     const index = this.getIndexOf(id);
     this.removeEdgesTo(id);
     if (!index) {
       jsPlumb.ready(() => {
+        console.log(this.vertices[index].data);
         jsPlumb.removeAllEndpoints(this.vertices[index].data.element);
       });
       this.vertices.splice(index, 1);
     }
+    console.log("removed");
   }
 
   getIndexOf(id) {

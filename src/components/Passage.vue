@@ -121,14 +121,14 @@ export default {
     });
     this.passage.element = this.$el.id;
     // jsPlumb.ready(() => {
-    // 	let incoming = this.$el;
-    // 	jsPlumb.makeTarget(incoming, {
-    // 		allowLoopback: false
-    // 	});
-    //
-    // 	let outgoing = jQuery(this.$el).children('.passage-identifier.outgoing').get(0);
-    // 	jsPlumb.makeSource(outgoing);
-    // 	console.log(incoming, outgoing);
+    //   const incoming = this.$el;
+    //   jsPlumb.makeTarget(incoming, {
+    //     allowLoopback: false
+    //   });
+
+    //   const outgoing = this.$el.children(".passage-identifier.outgoing").get(0);
+    //   jsPlumb.makeSource(outgoing);
+    //   console.log(incoming, outgoing);
     // });
   }
 };

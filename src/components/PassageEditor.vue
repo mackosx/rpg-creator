@@ -1,9 +1,5 @@
 <template>
-  <div
-    id="passage-editor-container"
-    v-if="current < passages.size() && current !== -1"
-    v-show="display"
-  >
+  <div id="passage-editor-container" v-if="display && current !== -1">
     <transition name="showEditor">
       <div id="passage-editor">
         <h3>Edit Passage</h3>
@@ -88,42 +84,6 @@ export default {
     current: Number,
     passages: Digraph,
     passage: Node
-  },
-  computed: {
-    edges: {
-      get() {
-        return this.passages.vertices[this.current].edges;
-      }
-    },
-    id: {
-      get() {
-        return this.passages.vertices[this.current].data.id;
-      }
-    },
-    title: {
-      get() {
-        return this.passages.vertices[this.current].data.name;
-      },
-      set(val) {
-        this.passages.vertices[this.current].data.name = val;
-      }
-    },
-    text: {
-      get() {
-        return this.passages.vertices[this.current].data.desc;
-      },
-      set(val) {
-        this.passages.vertices[this.current].data.desc = val;
-      }
-    },
-    value: {
-      get() {
-        return this.passages.vertices[this.current].data.weight;
-      },
-      set(val) {
-        this.passages.vertices[this.current].data.weight = val;
-      }
-    }
   },
   methods: {
     connectChild(e) {

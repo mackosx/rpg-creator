@@ -71,7 +71,6 @@
         <div class="passage-area">
           <template v-for="passage in passages.vertices">
             <Passage
-              :passages="passages"
               :passage="passage.data"
               :zoom="zoomLevel"
               :show="showEditor"
@@ -160,7 +159,6 @@ export default {
       const index = this.passages.getIndexOf(childId);
       const childEl = this.passages.vertices[index].data.element;
       const parentEl = parentNode.data.element; // not defined
-      console.log(parentNode);
       // add the element as an edge
       parentNode.addChild(parentEl, childEl, childId);
       document.querySelector("#child-select").value = "";
@@ -174,13 +172,16 @@ export default {
     },
     // Deletes this passage from the list of vertices
     remove(passage) {
+      console.log(passage);
       //e.stopPropagation();
+      console.log(passage.id);
       this.passages.removeVertex(passage.id);
       if (this.passages.size()) this.current = 0;
       else this.current = -1;
+      console.log(this.passages);
     },
     setStart(passage) {
-      this.passages.vertices.forEach((v) => {
+      this.passages.vertices.forEach(v => {
         v.data.isStart = false;
       });
 
@@ -190,16 +191,13 @@ export default {
     addPassage() {
       // Set the id of the new passage to one more than the biggest id
       const len = this.passages.vertices.length;
-      let id = 0;
-      if (this.passages.vertices[len - 1] !== undefined)
-        id = this.passages.vertices[len - 1].data.id + 1;
-      let newPassage = new PassageData(
-        "Untitled " + (id + 1),
+      const newPassage = new PassageData(
+        "Untitled " + (len + 1),
         "",
         "80px",
         "80px",
         0,
-        id
+        Date.now()
       );
       this.passages.addVertex(newPassage);
       //this.showEditor(newPassage.id);
@@ -224,6 +222,7 @@ export default {
       }
     },
     connect(from, to) {
+      console.log(from, to);
       return jsPlumb.connect({
         source: from,
         target: to
@@ -231,26 +230,24 @@ export default {
     },
     drawArrows() {
       // resets endpoints and draws arrows from scratch based on edge array
-      jsPlumb.ready(function() {
+      jsPlumb.ready(() => {
         jsPlumb.deleteEveryEndpoint();
       });
-      for (let i = 0; i < this.passages.vertices.length; i++) {
-        let el = this.passages.vertices[i].data.element;
-        for (let j = 0; j < this.passages.vertices[i].edges.length; j++) {
-          let edgeId = this.passages.vertices[i].edges[j].id;
-          let connectingEdgeIndex = this.passages.getIndexOf(edgeId);
-          let childEl = this.passages.vertices[connectingEdgeIndex].data
-            .element;
-          if (edgeId === this.passages.vertices[connectingEdgeIndex].data.id) {
+      this.passages.vertices.forEach(v => {
+        const parentElement = v.data.element;
+        v.edges.forEach(e => {
+          const connectingEdgeIndex = this.passages.getIndexOf(e.id);
+          const childNode = this.passages.vertices[connectingEdgeIndex];
+          if (e.id === childNode.data.id) {
             jsPlumb.ready(() => {
-              this.passages.vertices[i].edges[j].connection = this.connect(
-                el,
-                childEl
+              e.connection = this.connect(
+                parentElement,
+                childNode.data.element
               );
             });
           }
-        }
-      }
+        });
+      });
     }
   },
   created: function() {
